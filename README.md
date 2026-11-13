@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # El Mandadero · conectado con Supabase
 
 App de mandados por barrio para Manizales: usuarios piden por voz (IA), un repartidor de su barrio compra y entrega
@@ -64,3 +65,6 @@ pnpm build && npx cap add android && npx cap add ios && npx cap sync
 - Recomendado: **dos apps** (usuario y repartidor) con este mismo código. La del usuario no pide ubicación en segundo plano.
 - Repartidor: la ubicación con la pantalla apagada requiere un plugin de *background geolocation* (en Android, notificación fija obligatoria; en iOS, justificación para la revisión de Apple). Verifica el plugin vigente antes de elegirlo.
 - Las pantallas ya envían la posición con `actualizar_ubicacion`; solo hay que reemplazar `vigilarPosicion` en `src/lib/geo.ts` por el plugin.
+=======
+# EL_MANDADERO
+>>>>>>> 357f7cc8bd910444762e5999a96010923c6784af
