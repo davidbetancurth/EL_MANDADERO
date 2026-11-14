@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { useSesion } from "../context";
 import { Aviso, Button, Header, Icon, Shell } from "../components/ui";
@@ -69,8 +70,8 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
   const [indicaciones, setIndicaciones] = useState("");
   const [celular, setCelular] = useState("");
   const [correo, setCorreo] = useState("");
-  const [pin, setPin] = useState("");
-  const [pin2, setPin2] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [vehiculo, setVehiculo] = useState<Vehiculo | "">("");
   const [selfie, setSelfie] = useState<File | null>(null);
   const [frente, setFrente] = useState<File | null>(null);
@@ -95,24 +96,29 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
         if (!tipoDoc) return "Elige el tipo de documento.";
         if (soloDigitos(documento).length < 5 || soloDigitos(documento).length > 12) return "Revisa tu número de documento.";
         return "";
+
       case "ubicacion":
         if (direccion.trim().length < 5) return "Escribe tu dirección.";
         if (esRepartidor && !barrioId) return "Elige tu barrio.";
         if (!barrioId && !(noEncuentro && barrioTexto.trim().length >= 3)) return "Elige tu barrio o escribe cuál es.";
         return "";
+
       case "contacto":
         if (!/^3\d{9}$/.test(soloDigitos(celular))) return "Escribe tu celular de 10 dígitos (empieza por 3).";
-        if (correo && !/^\S+@\S+\.\S+$/.test(correo)) return "Revisa tu correo.";
-        if (pin.length !== 4) return "Tu PIN debe tener 4 dígitos.";
-        if (pin !== pin2) return "Los dos PIN no coinciden.";
-        if (/^(\d)\1{3}$/.test(pin) || pin === "1234") return "Elige un PIN menos fácil de adivinar.";
+        if (!/^\S+@\S+\.\S+$/.test(correo.trim())) return "Escribe un correo electrónico válido.";
+        if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+        if (password !== password2) return "Las contraseñas no coinciden.";
         return "";
+
       case "vehiculo":
         return vehiculo ? "" : "Elige tu vehículo.";
+
       case "rostro":
         return selfie ? "" : "Necesitamos una foto de tu rostro.";
+
       case "documento":
         return frente && reverso ? "" : "Sube las dos fotos de tu documento.";
+
       case "permisos":
         if (!aceptaDatos || !aceptaBio) return "Para continuar debes aceptar el tratamiento de datos.";
         if (esRepartidor && !aceptaUbic) return "Como repartidor debes aceptar compartir tu ubicación durante los pedidos.";
@@ -141,7 +147,7 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
     // Último paso: crear la cuenta
     setCargando(true);
     try {
-      const punto = await geocodificar(direccion); // opcional: si falla, se registra sin coordenadas
+      const punto = await geocodificar(direccion);
       await registrar(
         {
           rol,
@@ -151,7 +157,7 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
           documento,
           celular,
           correo: correo.trim(),
-          pin,
+          password,
           direccion: direccion.trim(),
           barrioId: barrioId ? Number(barrioId) : null,
           barrioTexto: noEncuentro ? barrioTexto.trim() : "",
@@ -293,16 +299,34 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
               <input inputMode="numeric" placeholder="300 000 0000" value={celular} onChange={(e) => setCelular(e.target.value)} />
             </label>
             <label>
-              Correo <small>(opcional)</small>
-              <input type="email" placeholder="nombre@correo.com" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+              Correo electrónico
+              <input
+                type="email"
+                placeholder="nombre@correo.com"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
+                autoComplete="email"
+              />
             </label>
             <label>
-              Crea un PIN de 4 dígitos
-              <PinInput value={pin} onChange={setPin} etiqueta="PIN, dígito" />
+              Crea una contraseña
+              <input
+                type="password"
+                placeholder="Mínimo 8 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+              />
             </label>
             <label>
-              Repite tu PIN
-              <PinInput value={pin2} onChange={setPin2} etiqueta="Confirmar PIN, dígito" />
+              Confirma tu contraseña
+              <input
+                type="password"
+                placeholder="Repite tu contraseña"
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+                autoComplete="new-password"
+              />
             </label>
           </>
         )}
