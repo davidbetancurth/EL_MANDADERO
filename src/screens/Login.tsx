@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSesion } from "../context";
 import { Aviso, Button, Header, Icon, Shell } from "../components/ui";
@@ -16,19 +15,34 @@ export function Login({ go }: { go: Go }) {
   const entrar = async () => {
     setError("");
 
-    if (!correo.trim()) return setError("Escribe tu correo electrónico.");
-    if (!password) return setError("Escribe tu contraseña.");
+    if (!correo.trim()) {
+      return setError("Escribe tu correo electrónico.");
+    }
+
+    if (!password) {
+      return setError("Escribe tu contraseña.");
+    }
 
     setCargando(true);
+
     try {
       await iniciarSesion(correo, password);
+
       const perfil = await recargar();
 
       if (!perfil) {
-        return setError("Tu cuenta todavía no tiene un registro completo.");
+        return setError(
+          "Tu cuenta todavía no tiene un registro completo."
+        );
       }
 
-      go(perfil.rol === "repartidor" ? "courier-home" : "voice");
+      if (perfil.rol === "admin") {
+        go("admin");
+      } else if (perfil.rol === "repartidor") {
+        go("courier-pending");
+      } else {
+        go("voice");
+      }
     } catch (e) {
       setError(mensajeError(e));
     } finally {
@@ -39,13 +53,16 @@ export function Login({ go }: { go: Go }) {
   return (
     <Shell>
       <Header title="Iniciar sesión" onBack={() => go("welcome")} />
+
       <section className="content">
         <div className="intro-icon">
           <Icon name="profile" size={34} />
         </div>
 
         <h2>Qué gusto verte</h2>
-        <p className="lead">Ingresa con tu correo y contraseña.</p>
+        <p className="lead">
+          Ingresa con tu correo y contraseña.
+        </p>
 
         <label>
           Correo electrónico
@@ -76,7 +93,8 @@ export function Login({ go }: { go: Go }) {
         </Button>
 
         <p className="security-note">
-          <Icon name="shield" size={18} /> Nunca compartas tu contraseña.
+          <Icon name="shield" size={18} />
+          Nunca compartas tu contraseña.
         </p>
       </section>
     </Shell>
