@@ -4,7 +4,6 @@ import { useSesion } from "../context";
 import { Aviso, Button, Header, Icon, Shell } from "../components/ui";
 import { registrar, soloDigitos } from "../lib/auth";
 import { mensajeError } from "../lib/errores";
-import { cuposLibres } from "../lib/api";
 import { geocodificar } from "../lib/geo";
 import type { Go } from "../lib/nav";
 import { VEHICULOS, type Rol, type Vehiculo } from "../lib/types";
@@ -130,17 +129,6 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
     setError("");
     const msg = validar(paso);
     if (msg) return setError(msg);
-
-    if (paso === "ubicacion" && esRepartidor && barrioId) {
-      setCargando(true);
-      try {
-        if ((await cuposLibres(Number(barrioId))) <= 0) return setError(mensajeError(new Error("BARRIO_LLENO")));
-      } catch (e) {
-        return setError(mensajeError(e));
-      } finally {
-        setCargando(false);
-      }
-    }
 
     if (indice < pasos.length - 1) return setIndice(indice + 1);
 
