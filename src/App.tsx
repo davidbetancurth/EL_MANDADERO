@@ -20,6 +20,7 @@ import { Companion } from "./screens/Companion";
 import { ConfigFaltante } from "./screens/ConfigFaltante";
 import { CourierHome } from "./screens/CourierHome";
 import { CourierPedido } from "./screens/CourierPedido";
+import { CourierPending } from "./screens/CourierPending";
 import { Home } from "./screens/Home";
 import { Login } from "./screens/Login";
 import { Orders } from "./screens/Orders";
@@ -48,6 +49,7 @@ const SOLO_USUARIO: Screen[] = [
 const SOLO_REPARTIDOR: Screen[] = [
   "courier-home",
   "courier-pedido",
+  "courier-pending",
 ];
 
 export default function App() {
@@ -111,7 +113,7 @@ export default function App() {
           if (p.rol === "admin") {
             setScreen("admin");
           } else if (p.rol === "repartidor") {
-            setScreen("courier-home");
+            setScreen("courier-pending");
           } else {
             setScreen("home");
           }
@@ -142,7 +144,7 @@ export default function App() {
     [perfil, repartidor, barrios, recargar]
   );
 
-  // Protección de navegación según el rol.
+  // Protección de navegación según el rol y la aprobación.
   let actual: Screen = screen;
 
   if (!cargando && supabaseConfigurado) {
@@ -154,14 +156,25 @@ export default function App() {
       actual !== "admin"
     ) {
       actual = "admin";
-    } else if (
-      perfil?.rol === "repartidor" &&
-      SOLO_USUARIO.includes(actual)
-    ) {
-      actual = "courier-home";
+    } else if (perfil?.rol === "repartidor") {
+      if (repartidor?.aprobado) {
+        if (
+          SOLO_USUARIO.includes(actual) ||
+          actual === "courier-pending"
+        ) {
+          actual = "courier-home";
+        }
+      } else if (!PUBLICAS.includes(actual)) {
+        actual = "courier-pending";
+      }
     } else if (
       perfil?.rol === "usuario" &&
-      (SOLO_REPARTIDOR.includes(actual) || actual === "admin")
+      SOLO_REPARTIDOR.includes(actual)
+    ) {
+      actual = "home";
+    } else if (
+      perfil?.rol === "usuario" &&
+      actual === "admin"
     ) {
       actual = "home";
     }
@@ -246,6 +259,10 @@ export default function App() {
             pedidoId={params.pedidoId}
           />
         );
+        break;
+
+      case "courier-pending":
+        vista = <CourierPending go={go} />;
         break;
 
       case "admin":
