@@ -14,6 +14,7 @@ export type Screen =
   | "profile"
   | "courier-home"
   | "courier-pedido"
+  | "courier-pending"
   | "config"
   | "admin";
 
