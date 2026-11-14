@@ -1,7 +1,8 @@
 
+
 -- EL MANDADERO
 -- Corrección: los repartidores solo ocupan cupo cuando el administrador los aprueba.
--- Puede aplicarse después de la migración inicial y de la migración de lista de espera.
+-- Aplicar después de la migración inicial y de la migración de lista de espera.
 
 -- 1. Tabla de solicitudes.
 create table if not exists public.solicitudes_repartidor (
@@ -31,7 +32,31 @@ create policy solicitudes_repartidor_leer
 grant select on public.solicitudes_repartidor to authenticated;
 
 
--- 2. Corregir el registro:
+-- 1.1 Recuperar solicitudes de la migración anterior.
+-- Los repartidores no aprobados pasan a la lista de espera.
+
+insert into public.solicitudes_repartidor(
+  id, barrio_id, vehiculo
+)
+select
+  r.id, r.barrio_id, r.vehiculo
+from public.repartidores r
+where not r.aprobado
+on conflict (id) do nothing;
+
+
+-- 1.2 Liberar los cupos de los repartidores no aprobados.
+
+delete from public.repartidores
+where not aprobado;
+
+
+-- 1.3 Eliminar la antigua función de aprobación automática.
+
+drop function if exists public.aprobar_siguiente_repartidor(int);
+
+
+-- 2. Corregir el registro.
 -- Todo aspirante a repartidor queda en solicitudes_repartidor.
 -- Ningún cupo se reserva durante el registro.
 
@@ -194,7 +219,6 @@ begin
     raise exception 'SOLICITUD_NO_DISPONIBLE';
   end if;
 
-  -- Evita que dos aprobaciones ocupen el mismo cupo.
   perform pg_advisory_xact_lock(v_solicitud.barrio_id);
 
   -- Antes de aprobar, deben existir los tres documentos.
