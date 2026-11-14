@@ -1,3 +1,4 @@
+
 import type { BorradorPedido, Rol, TipoPedido } from "./types";
 
 export type Screen =
@@ -13,7 +14,8 @@ export type Screen =
   | "profile"
   | "courier-home"
   | "courier-pedido"
-  | "config";
+  | "config"
+  | "admin";
 
 export interface NavParams {
   rol?: Rol;
