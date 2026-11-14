@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSesion } from "../context";
-import { Aviso, Button, Header, Icon, PinInput, Shell } from "../components/ui";
+import { Aviso, Button, Header, Icon, Shell } from "../components/ui";
 import { registrar, soloDigitos } from "../lib/auth";
 import { mensajeError } from "../lib/errores";
 import { cuposLibres } from "../lib/api";
