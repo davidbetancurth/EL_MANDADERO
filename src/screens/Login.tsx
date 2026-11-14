@@ -1,27 +1,33 @@
+
 import { useState } from "react";
 import { useSesion } from "../context";
-import { Aviso, Button, Header, Icon, PinInput, Shell } from "../components/ui";
-import { iniciarSesion, soloDigitos } from "../lib/auth";
+import { Aviso, Button, Header, Icon, Shell } from "../components/ui";
+import { iniciarSesion } from "../lib/auth";
 import { mensajeError } from "../lib/errores";
 import type { Go } from "../lib/nav";
 
 export function Login({ go }: { go: Go }) {
   const { recargar } = useSesion();
-  const [documento, setDocumento] = useState("");
-  const [pin, setPin] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [olvido, setOlvido] = useState(false);
   const [cargando, setCargando] = useState(false);
 
   const entrar = async () => {
     setError("");
-    if (soloDigitos(documento).length < 5) return setError("Escribe tu número de documento.");
-    if (pin.length !== 4) return setError("Tu PIN tiene 4 dígitos.");
+
+    if (!correo.trim()) return setError("Escribe tu correo electrónico.");
+    if (!password) return setError("Escribe tu contraseña.");
+
     setCargando(true);
     try {
-      await iniciarSesion(documento, pin);
+      await iniciarSesion(correo, password);
       const perfil = await recargar();
-      if (!perfil) return setError("Tu cuenta no está completa. Vuelve a registrarte con el mismo documento.");
+
+      if (!perfil) {
+        return setError("Tu cuenta todavía no tiene un registro completo.");
+      }
+
       go(perfil.rol === "repartidor" ? "courier-home" : "voice");
     } catch (e) {
       setError(mensajeError(e));
@@ -37,34 +43,43 @@ export function Login({ go }: { go: Go }) {
         <div className="intro-icon">
           <Icon name="profile" size={34} />
         </div>
+
         <h2>Qué gusto verte</h2>
-        <p className="lead">Ingresa con tu documento y tu PIN.</p>
+        <p className="lead">Ingresa con tu correo y contraseña.</p>
+
         <label>
-          Documento de identidad
+          Correo electrónico
           <input
-            inputMode="numeric"
-            placeholder="Ej. 52 345 678"
-            value={documento}
-            onChange={(e) => setDocumento(e.target.value)}
-            autoComplete="username"
+            type="email"
+            placeholder="tucorreo@ejemplo.com"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            autoComplete="email"
           />
         </label>
+
         <label>
-          PIN de 4 dígitos
-          <PinInput value={pin} onChange={setPin} />
+          Contraseña
+          <input
+            type="password"
+            placeholder="Escribe tu contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
         </label>
-        <button className="text-link" onClick={() => setOlvido(true)}>
-          Olvidé mi clave
-        </button>
-        {olvido && <Aviso tipo="ok">Para recuperar tu PIN comunícate con el soporte de El Mandadero.</Aviso>}
+
         {error && <Aviso>{error}</Aviso>}
+
         <Button onClick={entrar} disabled={cargando}>
           {cargando ? "Entrando..." : "Entrar"}
         </Button>
+
         <p className="security-note">
-          <Icon name="shield" size={18} /> Nunca compartas tu PIN con nadie.
+          <Icon name="shield" size={18} /> Nunca compartas tu contraseña.
         </p>
       </section>
     </Shell>
   );
 }
+
