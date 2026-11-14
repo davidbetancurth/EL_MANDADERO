@@ -132,7 +132,6 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
 
     if (indice < pasos.length - 1) return setIndice(indice + 1);
 
-    // Último paso: crear la cuenta
     setCargando(true);
     try {
       const punto = await geocodificar(direccion);
@@ -159,8 +158,11 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
         },
         { selfie, frente, reverso },
       );
+
       const perfil = await recargar();
-      go(perfil?.rol === "repartidor" ? "courier-home" : "voice");
+
+      // Los repartidores esperan la aprobación del administrador.
+      go(perfil?.rol === "repartidor" ? "courier-pending" : "voice");
     } catch (e) {
       setError(mensajeError(e));
     } finally {
@@ -199,9 +201,7 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
             <label>
               Tipo de documento
               <select value={tipoDoc} onChange={(e) => setTipoDoc(e.target.value as "CC" | "CE" | "")}>
-                <option value="" disabled>
-                  Selecciona una opción
-                </option>
+                <option value="" disabled>Selecciona una opción</option>
                 <option value="CC">Cédula de ciudadanía</option>
                 <option value="CE">Cédula de extranjería</option>
               </select>
@@ -237,9 +237,7 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
                   <label>
                     Elige de la lista ({barriosFiltrados.length})
                     <select value={barrioId} onChange={(e) => setBarrioId(e.target.value)}>
-                      <option value="" disabled>
-                        Selecciona tu barrio
-                      </option>
+                      <option value="" disabled>Selecciona tu barrio</option>
                       {barriosFiltrados.map((b) => (
                         <option key={b.id} value={b.id}>
                           {b.nombre}
@@ -288,33 +286,15 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
             </label>
             <label>
               Correo electrónico
-              <input
-                type="email"
-                placeholder="nombre@correo.com"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                autoComplete="email"
-              />
+              <input type="email" placeholder="nombre@correo.com" value={correo} onChange={(e) => setCorreo(e.target.value)} autoComplete="email" />
             </label>
             <label>
               Crea una contraseña
-              <input
-                type="password"
-                placeholder="Mínimo 8 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
+              <input type="password" placeholder="Mínimo 8 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
             </label>
             <label>
               Confirma tu contraseña
-              <input
-                type="password"
-                placeholder="Repite tu contraseña"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-                autoComplete="new-password"
-              />
+              <input type="password" placeholder="Repite tu contraseña" value={password2} onChange={(e) => setPassword2(e.target.value)} autoComplete="new-password" />
             </label>
           </>
         )}
@@ -367,12 +347,10 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
               </div>
             </div>
             <label className="checkbox">
-              <input type="checkbox" checked={aceptaDatos} onChange={(e) => setAceptaDatos(e.target.checked)} /> Acepto el
-              tratamiento de mis datos personales.
+              <input type="checkbox" checked={aceptaDatos} onChange={(e) => setAceptaDatos(e.target.checked)} /> Acepto el tratamiento de mis datos personales.
             </label>
             <label className="checkbox">
-              <input type="checkbox" checked={aceptaBio} onChange={(e) => setAceptaBio(e.target.checked)} /> Acepto el
-              tratamiento de mis datos biométricos (foto de rostro y documento) para verificar mi identidad.
+              <input type="checkbox" checked={aceptaBio} onChange={(e) => setAceptaBio(e.target.checked)} /> Acepto el tratamiento de mis datos biométricos (foto de rostro y documento) para verificar mi identidad.
             </label>
             <label className="checkbox">
               <input type="checkbox" checked={aceptaUbic} onChange={(e) => setAceptaUbic(e.target.checked)} />{" "}
@@ -381,8 +359,7 @@ export function Register({ go, rol }: { go: Go; rol: Exclude<Rol, "admin"> }) {
                 : "Acepto usar mi ubicación para encontrar dónde entregar mis pedidos."}
             </label>
             <p className="lead" style={{ fontSize: 13 }}>
-              El asistente de voz solo escucha cuando tocas el micrófono. Lo que dices se convierte en texto y un servicio
-              de inteligencia artificial lo usa para armar tu pedido.
+              El asistente de voz solo escucha cuando tocas el micrófono. Lo que dices se convierte en texto y un servicio de inteligencia artificial lo usa para armar tu pedido.
             </p>
           </>
         )}
